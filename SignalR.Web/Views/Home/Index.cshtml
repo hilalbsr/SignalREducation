@@ -1,0 +1,72 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-2">
+        <input type="text" id="txtMessage" class="form-control" />
+        <button id="btnMessageSend" class="btn btn-primary">Gönder</button>
+        <div class="alert alert-info">
+            Bağlantı Durumu : <strong id="conStatus"></strong>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+
+            //client side hub. Clien'ın server'a bağlanmasını sağlar.
+            //HubConnectionBuilder ile server'a bağlanmak için gerekli olan bağlantıyı oluşturur.
+            //withUrl ile server'a bağlanmak için gerekli olan url'i belirtir.
+            //build ile bağlantıyı oluşturur.
+            var connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/MyHub").build();
+            $("#conStatus").text("Bağlantı Bekleniyor...");
+
+            //Bağlantı oluşturulduktan sonra server'a bağlanmak için start metodu kullanılır.
+            //Server'a bağlanıldıktan sonra server'dan gelen mesajları dinlemek için on metodu kullanılır.
+            connection.start().then(() => {
+                $("#conStatus").text("Bağlantı Başarılı" + connection.connectionState);
+            }).catch(function (err) {
+                $("#conStatus").text(err.toString());
+                return console.error(err.toString());
+            });
+
+            $("#btnMessageSend").click(function () {
+                var message = $("#txtMessage").val();
+
+                //Server'a mesaj göndermek için invoke metodu kullanılır.
+                //Invoke metodu ile server'da bulunan SendMessage metodunu çağırırız.
+                //SendMessage metoduna message parametresi göndeririz.
+                //SendMessage metodunu server tarafında MyHub sınıfında tanımladık.
+                connection.invoke("SendMessage", message).catch(function (err) {
+                    return console.error(err.toString());
+                });
+
+            });
+
+            //Server'dan gelen mesajları dinlemek için on metodu kullanılır.
+            //ReceiveMessage metodu server tarafında MyHub sınıfında tanımladık.
+            //ReceiveMessage metodu server tarafında mesaj gönderildiğinde çalışır.
+            //ReceiveMessage metodu client tarafında server'dan gelen mesajı alert ile gösterir.
+            connection.on("ReceiveMessage", function (message) {
+                alert(message);
+            });
+
+            // connection.on("ReceiveMessage", message => {
+            //     alert(message);
+            // });
+
+        });
+
+
+    </script>
+}
+
