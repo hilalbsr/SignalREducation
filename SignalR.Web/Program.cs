@@ -1,7 +1,12 @@
+using SignalR.Web.Hubs;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+//SignalR servisini ekledik.
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -13,12 +18,17 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthorization();
+
+//SignalR'ý kullanabilmek için bu kodu eklememiz gerekiyor.
+//https://localhost:5001/myhub adresine istek atýldýðýnda MyHub sýnýfý ile eþleþir.
+app.MapHub<MyHub>("/MyhHub");
 
 app.MapControllerRoute(
     name: "default",

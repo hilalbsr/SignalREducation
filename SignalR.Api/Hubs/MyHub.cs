@@ -15,10 +15,10 @@ namespace SignalR.Api.Hubs
     {
         public List<string> MessagesList { get; set; } = new List<string>();
 
-        public async Task SendMessage(string user, string message)
-        {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
-        }
+        //public async Task SendMessage(string user, string message)
+        //{
+        //    await Clients.All.SendAsync("ReceiveMessage", user, message);
+        //}
 
         /// <summary>
         /// Tüm client'lara mesaj gönderir.

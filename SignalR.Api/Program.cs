@@ -3,11 +3,8 @@ using SignalR.Api.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
-//SignalR servisini ekledik.
-builder.Services.AddSignalR();
 
 //Cors politikasýný ekledik.
 //https://localhost:5003 adresinden gelen isteklere izin verdik.
@@ -23,30 +20,34 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
     {
-        policy.AllowAnyMethod().AllowAnyHeader().WithOrigins("https://localhost:5003").AllowCredentials();
+        policy.WithOrigins("https://localhost:7065").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
 
-
+//SignalR servisini ekledik.
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
-
+app.UseCors("CorsPolicy");
 app.UseAuthorization();
 
 app.MapControllers();
 
+
+
 //SignalR'ý kullanabilmek için bu kodu eklememiz gerekiyor.
 //https://localhost:5001/myhub adresine istek atýldýðýnda MyHub sýnýfý ile eþleþir.
-app.MapHub<MyHub>("/MyhHub");
+app.MapHub<MyHub>("/MyHub");
 
 //app.UseEndpoints(endpoints =>
 //{
-//    app.MapControllers();
-//    app.MapHub<MyHub>("/myhub");
-//});
+//    endpoints.MapControllers();
 
+//    ///http://localhost:4400/MyHub
+//    endpoints.MapHub<MyHub>("/MyHub");
+//});
 
 app.Run();
