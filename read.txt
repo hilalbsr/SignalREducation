@@ -1,0 +1,68 @@
+
+ASP.NET CORE + SIGNALR
+
+4. SignalR nedir ?
+
+Uygulamarýmýza realtime özellik kazandýran bir opensource kütüphanedir.
+Websocket teknolojisi.
+Websocket --tek bir tcp üzerinden client ve server arasýnda iki yönlü iletiþimi saðlayan protokoldür. Client ve serverin haberleþmesi için belli bir kurallar olmalý.
+2011 yýlýnda ortaya çýktý. 2012 de asp.net te çýktý.
+RealTime -- client ve server'in anlýk olarak haberleþmesi.--browserda chat uygulamasý.sayfa yenilenmeden meajlaþýlmasý. --açýk artýrma siteleri. --monitoring iþlemi.chart'larýn güncellenmesi.
+
+
+
+5. WebSocket Server uygulamasý nasýl geliþtirebiliriz ? SignalR nasýl çalýþýr ?
+
+Asp.Net Core : SignalR
+Node.js : Socket.IO
+Pyhton : WebSockets
+
+SignalR'ýn merkezinde HUB bir dediðimiz merkezi yapý var. Client ile server arasýndaki haberleþmeyi bu HUB(class) yapar.
+
+Client1 --> IN --> HUB --> OUT --> Client2 Client3 Client4(Bu client'lar HUB 'a subscribe -abone olanlar) --> OUT --> Client1
+
+Anlýk olarak data izlemek, anlýk olarak client'larý bilgilendirmek.
+
+
+6. SignalR Server uygulamasý inþa etmek
+
+Client           (Server Method)
+Client Method	 (Client Method)
+
+						SignalR Server
+						Server Method
+						Client Method
+Client 
+Client Method 	 (Client Method)
+
+Client'tan Server'a Server'dan Client'a akýþ oluyor. Server, Client metodunu çalýþtýrabiliyor.
+
+Client server'a istek yapýyor. Server içerisindeki Client Metodu kullanarak ilk önce Client'a çaðrý yapýyor.Client Server'ý çalýþtýrdý. Server Client metodlarýný çalýþtýrdý.
+
+
+
+9. SignalR Client Log Mesajlarý
+
+Sorunsuzdan sorunluya daoðru
+
+1.Trace  		--Uygulama hakkýnda genel bilgiler vermkek.
+2.Debug  		--Uygulama hakkýnda genel bilgiler vermkek.
+3.Information  	--Gerekli bilgiler
+4.Warning		--Bir problem var. Ama uygulama hala çalýþýr durumda.
+5.Error			--Hata var. lgilen
+6.Critical		--Hata var.Uygulamanýn genelinde bir sýkýntýya sebep olabilir.
+
+
+10. SignalR Client withAutomaticReconnect method
+
+withAutomaticReconnect  --client baðlantýsýný yaptý. Bir nedenden dolayý baðlantý koparsa bu metotla otomatik baðlantý yapmasýný saðlar.
+
+0sn,2sn,10sn,30sn arasý istekler yapar. 30snden sonra baþarýsýzsa baðlantý yapma denemelerini býrakýyor.
+onreconnection 	--baðlantý koptunktan sonra 0sn de bu metot event fýrlatýr. Tekrar baðlanýr. Baðlantý koptu, tekrar baðlanýyorum diyebilirsiniz.
+onreconntected 		--baðlantý tekrar saðlanýrsa bu event fýrlatýlýr ve baðlantý kuruldu diyebilinebilir.
+onclose	-- Baðlantý kurulmazsa bu metot fýrlatýrlýr. Baðlantý tamamen koptu. Sayfanýzý yenilebilirsiniz.
+
+Döngüyede sokulabilir.
+onreconnection ve onreconntected birer kez çalýþýr.
+
+
