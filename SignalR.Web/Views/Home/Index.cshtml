@@ -2,25 +2,64 @@
     ViewData["Title"] = "Home Page";
 }
 
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
-
 <div class="row">
+
     <div class="col-md-8 offset-2">
-        <input type="text" id="txtMessage" class="form-control" />
-        <button id="btnMessageSend" class="btn btn-primary">Gönder</button>
-        <div class="alert alert-info">
-            Bağlantı Durumu : <strong id="conStatus"></strong>
+        <input class="form-control" type="text" id="txtName" />
+        <hr />
+        <button class="btn btn-primary" id="btnNameSave">İsim Kaydet</button>
+        <button class="btn btn-warning" id="btnNameTeam">İsim Kaydet(Takım)</button>
+
+        <button class="btn btn-danger" id="btnProduct">Ürün Gönder</button>
+        <div class="alert alert-info mt-2">
+            <div class="float-left">
+                Bağlantı Durumu:<strong id="conStatus"></strong> , Client Saysı:<strong id="clientCount"></strong>
+            </div>
+            <div class="float-right">
+                <div id="loading" class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+
+        <div id="notify"></div>
+    </div>
+
+    <div class="col-md-8 offset-2">
+        <ul class="list-group" id="namesList"></ul>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="TeamGroup" value="Team A" />
+                <label class="form-check-label">A Takımı</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="TeamGroup" value="Team B" />
+                <label class="form-check-label">B Takımı</label>
+            </div>
+        </div>
+
+        <div class="col-md-8 offset-2">
+            <div class="row">
+
+                <div class="col-md-6">
+                    <h2>A Takımı</h2>
+                    <ul class="list-group" id="ATeamList"></ul>
+                </div>
+                <div class="col-md-6">
+                    <h2>B Takımı</h2>
+                    <ul class="list-group" id="BTeamList"></ul>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-md-8 offset-2">
-        <ul class="list-group" id="messagesList"></ul>
-    </div>
-
 </div>
+
+
 @section Scripts {
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
@@ -32,35 +71,87 @@
             //withUrl ile server'a bağlanmak için gerekli olan url'i belirtir.
             //build ile bağlantıyı oluşturur.
             //var connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7116/MyHub").build();
-           
+
             //configureLogging ile loglama seviyesini belirleriz.
             //signalR.LogLevel.Information
-            //withAutomaticReconnect 
+            //withAutomaticReconnect
+            //1000ms 1sn sonra bağlan.1sn sonra.3sn sonra gibi değerler verilebilir.
             var connection = new signalR.HubConnectionBuilder()
-                            .configureLogging(signalR.LogLevel.Debug)
-                            withAutomaticReconnect()
-                            .withUrl("https://localhost:7116/MyHub")
-                            .build();
-          
+                //.configureLogging(signalR.LogLevel.Debug)
+                .withAutomaticReconnect([1000, 3000, 3000, 2000])
+                .withUrl("https://localhost:7116/MyHub")
+                .build();
 
-            $("#conStatus").text("Bağlantı Bekleniyor...");
+            statusShow();
+            start();
 
-            //Bağlantı oluşturulduktan sonra server'a bağlanmak için start metodu kullanılır.
-            //Server'a bağlanıldıktan sonra server'dan gelen mesajları dinlemek için on metodu kullanılır.
-            connection.start().then(() => {
-                $("#conStatus").text("Bağlantı Başarılı : " + connection.connectionState);
-            }).catch(function (err) {
-                $("#conStatus").text(err.toString());
+            //$("#conStatus").text("Bağlantı Bekleniyor...");
+
+
+            function start() {
+
+                //Bağlantı oluşturulduktan sonra server'a bağlanmak için start metodu kullanılır.
+                //Server'a bağlanıldıktan sonra server'dan gelen mesajları dinlemek için on metodu kullanılır.
+                connection.start().then(() => {
+                    statusShow();
+                    $("#loading").hide();
+
+                    //Kullanıcı ilk girdiği anda olan dataların gösterilmesi
+                    //Veritaından gelen dataların gösterilmesi
+                    connection.invoke("GetNames");
+
+                    //Takım işlemleri
+                    //takımlara üye olan kişileri başta yüklemek için
+                    connection.invoke("GetNamesByGroup");
+
+                }).catch(function (err) {
+                    $("#conStatus").text(err.toString());
+                    console.log(err);
+                    setTimeout(() => start(), 2000) //start'da hata meydana gelirse 2sn sonra tekrar bağlan.
+                });
+            }
+
+            function statusShow() {
+                $("#conStatus").text(connection.state);
+            }
+
+            //Bağlantı durumunu dinlemek için on metodu kullanılır.
+            //connection.on ile bağlantı durumunu dinleriz.
+            //connection.connectionState ile bağlantı durumunu alırız.
+            //Bağlantı koptuktan sonra 1 kere deniyecek olan metot
+            connection.onreconnecting(error => {
+                $("#loading").show();
+                statusShow();
+                console.log(connection.connectionState);
             });
 
-            $("#btnMessageSend").click(function () {
-                var message = $("#txtMessage").val();
+            //Bağlantı kurulduğu zaman çalışacak olan metot
+            //connectionId parametresi ile bağlantı id'sini alırız.Client'ın server'a kurulduğundaki bağlantı Id'si
+            //connectionId Server'dan gelir
+            connection.onreconnected(connectionId => {
+                $("#loading").hide();
+                statusShow();
+                console.log("connectionId : " + connectionId);
+            });
+
+            //4 kere bağlantı yaptıktan sonra başarısız olduğunda çalışacak olan metot
+            //Sayfayı yenilemek gerekebilir.
+            connection.onclose(() => {
+                $("#loading").hide();
+                statusShow();
+                //alert("Sayfayı yenileyin. Bağlantı koptu.");
+                start();
+            });
+
+            //Server'a mesaj göndermek için butona click event'i eklenir.
+            $("#btnNameSave").click(function () {
+                var name = $("#txtName").val();
 
                 //Server'a mesaj göndermek için invoke metodu kullanılır.
-                //Invoke metodu ile server'da bulunan SendMessage metodunu çağırırız.
-                //SendMessage metoduna message parametresi göndeririz.
-                //SendMessage metodunu server tarafında MyHub sınıfında tanımladık.
-                connection.invoke("SendMessage", message).catch(function (err) {
+                //Invoke metodu ile server'da bulunan SendName metodunu çağırırız.
+                //SendName metoduna message parametresi göndeririz.
+                //SendName metodunu server tarafında MyHub sınıfında tanımladık.
+                connection.invoke("SendName", name).catch(function (err) {
                     return console.error(err.toString());
                 });
 
@@ -70,15 +161,113 @@
             //ReceiveMessage metodu server tarafında MyHub sınıfında tanımladık.
             //ReceiveMessage metodu server tarafında mesaj gönderildiğinde çalışır.
             //ReceiveMessage metodu client tarafında server'dan gelen mesajı alert ile gösterir.
-            connection.on("ReceiveMessage", function (message) {
-                alert(message);
-                $("#messagesList").append("<li>" + message + "</li>")
+            connection.on("ReceiveName", function (name) {
+                //alert(message);
+                $("#namesList").append(`<li class="list-group-item">${name} </li>`)
             });
 
             // connection.on("ReceiveMessage", message => {
             //     alert(message);
             // });
 
+
+            //Server'dan gelen client sayısını dinlemek için on metodu kullanılır.
+            connection.on("ReceiveClientCount", clientCount => {
+                $("#clientCount").text(clientCount);
+                $("#loading").hide();
+            });
+
+            connection.on("Notify", teamCount => {
+                $("#notify").html(`<div class="alert alert-">${teamCount}</div>`);
+            });
+
+            connection.on("Error", errorText => {
+                alert(errorText);
+            });
+
+            connection.on("ReceiveNames", names => {
+                debugger;
+                $("#namesList").empty();
+                names.forEach((item, index) => {
+                    $("#namesList").append(`<li class="list-group-item">${item} </li>`)
+                });
+            });
+
+            //#region Takım işlemleri
+
+            $("#btnNameTeam").click(() => {
+                let name = $("#txtName").val();
+                let teamName = $("input[type=radio]:checked").val();
+
+                if (teamName == null) {
+                    alert("Takım seçiniz");
+                    return;
+                }
+
+                connection.invoke("SendNameByGroup", name, teamName).catch((err) => {
+                    console.log(err);
+                })
+            });
+
+            connection.on("ReceiveMessageByGroup", (name, teamId) => {
+                let listName;
+
+                if (teamId == 1)
+                    listName = "ATeamList";
+                else
+                    listName = "BTeamList";
+
+                $(`#${listName}`).append(`<li class="list-group-item">${name} </li>`)
+            });
+
+            $("input[type=radio]").change(() => {
+                let value = $(`input[type=radio]:checked`).val();
+                //let uncheckedvalue = $(`input[type=radio]:unchecked`).val();
+                if (value == "Team A") {
+                    connection.invoke("AddToGroup", value);
+                    connection.invoke("RemoveToGroup", "Team B");
+                }
+                else {
+                    connection.invoke("AddToGroup", value);
+                    connection.invoke("RemoveToGroup", "Team A");
+                }
+
+                // connection.invoke("AddToGroup", value);
+                // connection.invoke("RemoveToGroup", uncheckedvalue);
+            });
+
+            connection.on("ReceiveNamesByGroup", (teams) => {
+                console.log(teams);
+
+                teams.forEach((team, index) => {
+                    let listName;
+                    if (team.teamId == 1)
+                        listName = "ATeamList";
+                    else
+                        listName = "BTeamList";
+
+                    team.users.forEach((user, index2) => {
+                        $(`#${listName}`).append(`<li class="list-group-item">${user.name} </li>`)
+
+                    })
+                })
+            });
+
+            //#endregion
+
+            //#region Complex Type
+
+            //Complex Type'ları Json olarak gönderiyoruz
+            $("#btnProduct").click(() => {
+                let product = { "Id": 1, "Name": "Kalem", "Price": 100, "Stock": 200 };
+                connection.invoke("SendProduct", product);
+            });
+
+            connection.on("ReceiveProduct", product => {
+                console.log(product);
+            });
+
+            //#enregion
         });
 
 

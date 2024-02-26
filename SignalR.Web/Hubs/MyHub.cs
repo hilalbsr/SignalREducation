@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace SignalR.Web.Hubs
+namespace SignalR.Web.Hubs;
+
+// 23. SignalR Server Hub (Asp.Net Core Mvc)
+public class MyHub : Hub
 {
-    public class MyHub : Hub
+    public async Task SendName(string message)
     {
-        public async Task SendMessage(string message)
-        {
-            await Clients.All.SendAsync("ReceiveMessage", message);
-        }
+        await Clients.All.SendAsync("ReceiveMessage", message);
     }
 }

@@ -1,10 +1,11 @@
+using Microsoft.EntityFrameworkCore;
 using SignalR.Api.Hubs;
+using SignalR.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-
 
 //Cors politikasýný ekledik.
 //https://localhost:5003 adresinden gelen isteklere izin verdik.
@@ -26,6 +27,11 @@ builder.Services.AddCors(options =>
 
 //SignalR servisini ekledik.
 builder.Services.AddSignalR();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr"));
+});
 
 var app = builder.Build();
 

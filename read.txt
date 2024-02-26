@@ -66,3 +66,95 @@ Döngüyede sokulabilir.
 onreconnection ve onreconntected birer kez çalýþýr.
 
 
+12. SignalR Client Otomatik baðlantý
+
+Kullanýcý ilk girdiði anda baðlantý yoksa.
+
+
+13. SignalR Server Hub virtual methods
+
+
+OnConnectedAsync		--Baðlantý olduðu zaman, client'lar baðlandýkça. baðlý olan client sayýsý
+OnDisconnectedAsync		--Baðlantý koptuðu zaman, client'lar baðlantý koptuðunda
+
+
+14. SignalR Server IHubContext<>
+
+IHubContext<> --Hub'ýn içerisindeki metotlarý çaðýrabilmek için kullanýlýr.
+
+Controller'da aþaðýdaki taným üzerinden client ile server arasýndaki iletiþimi kurarýz.
+private readonly IHubContext<MyHub> _hubContext;
+
+//server tarafýnda client'lara mesaj göndermek için kullanýlýr.
+//Tüm client'lara mesaj gönderir.
+[HttpGet("{teamCount}")]
+public async Task<IActionResult> SetTeamCount(int teamCount)
+{
+    //MyHub.TeamCount = teamCount;
+
+    //Clients.All.SendAsync --bu hub'a baðlý olan tüm client'lara mesajý gönderir.
+    await _hubContext.Clients.All.SendAsync("Notify", $"Arkadaþlar takým  {teamCount} kiþi olacaktýr.");
+
+    return Ok();
+}
+
+// Client tarafýnda server'dan mesaj almak için kullanýlýr.
+connection.on("Notify", teamCount => {
+    $("#notify").html(`<div class="alert alert-">${teamCount}</div>`);
+});
+
+
+15. SignalR Server Hub Clients.Caller
+
+Clients.Caller.SendAsync --sadece çaðýran client'a mesaj gönderir.
+
+Client bir istek yaptýðýnda hangi client istek yapmýþsa (o client'ýn metodunu kullanýr)sadece ona mesaj gönderir.
+
+8kiþilik yer var. 9.girerken yer yok mesajýnýn 9.ya mesaj verilmesi
+
+
+//Clients.Caller --bu hub'a baðlý olan client'a mesajý gönderir.
+//ReceiveMessage --client tarafýnda bu isimde bir metot olmalýdýr. bu metot olmazsa mesaj alýnamaz.Subrscribe olmalýlar buna.
+//name --client tarafýna gönderilecek olan mesaj. tipi önemli deðil. object olabilir.class olabilir.
+await Clients.Caller.SendAsync("ReceiveMessage", "Takým dolu.");
+
+16. SignalR Server Hub Clients.Caller-2
+
+Kullanýcý ilk girdiði anda olan datalarýn gösterilmesi
+Veritaýndan gelen datalarýn gösterilmesi
+Kullanýcý bir iþlem yaptýðýnda diðer kullanýcýlarýn bu iþlemi görmesi
+
+
+
+17. SignalR Server Hub Clients.Group-1
+
+Group olarak client'lara mesaj göndermek için kullanýlýr.
+Chat oda mesajlaþmasý.
+Bir grup oluþturulur. Gruba client'lar eklenir. Gruba eklenen client'lar arasýnda mesajlaþma yapýlýr.
+
+A ve B takýmý olsun. A ve B takýmýndaki kiþilere mesaj göndermek istesin
+
+
+18. SignalR Server Hub Clients.Group-2
+Clientlarýn gruplara eklenmesi ve gruplardan çýkarýlmasý
+
+22. SignalR Server Strongly typed Hubs
+
+Hub oluþtururken Strongly type -- bir dile objenizi bilmesi demektir.
+Ýnterface üzerinden metot isimlerini alýnmasý
+
+IProductHub interface  ve ProductHub classý oluþturuyoruz.
+ReceiveProduct metodunu kendimiz vermeden ismini algýlamakta.
+
+ public class ProductHub : Hub<IProductHub>
+ {
+     public async Task SendProduct(Product product)
+     {
+         await Clients.All.ReceiveProduct(product);
+     }
+ }
+
+
+23. SignalR Server Hub (Asp.Net Core Mvc)
+
+SignalR Server uygulamasýný Asp.Net Core Mvc projesine nasýl ekleyebiliriz ?
