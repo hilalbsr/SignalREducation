@@ -74,7 +74,7 @@
 
             //configureLogging ile loglama seviyesini belirleriz.
             //signalR.LogLevel.Information
-            //withAutomaticReconnect
+            //withAutomaticReconnect --bağlantı var ama koptuğu durumlarda connection kurmaya çalışır.
             //1000ms 1sn sonra bağlan.1sn sonra.3sn sonra gibi değerler verilebilir.
             var connection = new signalR.HubConnectionBuilder()
                 //.configureLogging(signalR.LogLevel.Debug)

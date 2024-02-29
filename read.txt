@@ -8,8 +8,14 @@ Websocket teknolojisi.
 Websocket --tek bir tcp üzerinden client ve server arasýnda iki yönlü iletiþimi saðlayan protokoldür. Client ve serverin haberleþmesi için belli bir kurallar olmalý.
 2011 yýlýnda ortaya çýktý. 2012 de asp.net te çýktý.
 RealTime -- client ve server'in anlýk olarak haberleþmesi.--browserda chat uygulamasý.sayfa yenilenmeden meajlaþýlmasý. --açýk artýrma siteleri. --monitoring iþlemi.chart'larýn güncellenmesi.
+Sayfa yenilenmeden sayfada datanýn yenilenmesi.
+Server'da web tarafýný tetikleme imkaný sunar.
+Borsa Uygulamasý, Chat Uygulamasý, Maps, Canlý Dashboard'lar vs vs.
 
-
+SignalR arka planda 3 teknolojiyi desteklemezse sýrasýyle kullanýr.
+WebSockets -çift taraflý iletiþim saðlanmasý. TCP üzerinden iletiþim kuran protokol
+Server-Sent Events --Tarayýcý websocket'i desteklemiyorsa server sent events ile çift taraflý iletiþim saðlar.
+Long Polling --Server-Sent Events desteklemez ise bunu kullanýr. Server tarafýndan web'e sürekli istek yaparak çift yönlü iletiþimi saðlar.
 
 5. WebSocket Server uygulamasý nasýl geliþtirebiliriz ? SignalR nasýl çalýþýr ?
 
@@ -158,3 +164,36 @@ ReceiveProduct metodunu kendimiz vermeden ismini algýlamakta.
 23. SignalR Server Hub (Asp.Net Core Mvc)
 
 SignalR Server uygulamasýný Asp.Net Core Mvc projesine nasýl ekleyebiliriz ?
+
+
+33. Hub nedir?
+
+Hub --Client ile Server arasýnda ileþimi kuran
+    --Client'ýn Server'daki Server'ýn Client'daki bir metodunu çaðýrmaya saðlayan ana yapý.
+
+
+
+
+
+SignalR nedir ?
+
+SignalR, web uygulamalarýna, WebSocket teknolojisini kulllanarak Real Time fonksiyonellik kazandýran bir Open Source kütüphanedir.
+Uygulamarýmýza realtime özellik kazandýran bir opensource kütüphanedir.
+
+Özünde RPC(Remote Procedure Call) mekanizmasýný benimsemektedir. RPC sayesinde server,
+client!ta bulunan herhangi bir metodun tetiklenmesini ve veri transferini saðlayabilmektedir.
+
+gRPC Protokolü:
+
+Hub özünde bir class'týr ve içerisinde tanýmlanana bir metoda subscribe olan tüm client!lar ilgili Hub üzerinden iletilen mesajlarý alacaktýr.
+
+
+withAutomaticReconnect -- Baðlantý var ama koptuðu durumlarda connection kurmaya çalýþýr.
+onreconnecting         -- Yeniden baðlanma giriþimlerini baþlatmadan önce fýrlatýlan/tetiklenen event.
+onreconnected          -- Yeniden baðlantý gerçekleþtiðinde tetiklenen fonksiyondur.
+onclose                -- Yeniden baðlantý giriþimlerinin sonuçsuz kaldýðý durumda fýrlatýlýr.
+
+ConnectionID -- Sistemdeki birden fazla baðlantýsý olan Client'larý birbirinden ayýrtetmek için kullanýlan bir numaradýr.
+             -- Hub'a baðlantý gerçekleþtiren Client'lara sþsten tarafýndan verilen, unique tekil bir deðerdir.
+             -- Amacý Client'larý birbirinden ayýrmaktýr.
+
